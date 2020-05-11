@@ -6,6 +6,7 @@ package qcloudsms
 import (
 	"bytes"
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -272,8 +273,12 @@ func (c *QcloudSMS) NewRequest(params interface{}) ([]byte, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", c.Options.UserAgent)
 
+	tr := &http.Transport{ //解决x509: certificate signed by unknown authority
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
 	httpClient := &http.Client{
-		Timeout: c.Options.HTTP.Timeout,
+		Timeout:   c.Options.HTTP.Timeout,
+		Transport: tr,
 	}
 
 	resp, err := httpClient.Do(req)
